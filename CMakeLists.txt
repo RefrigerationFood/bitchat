@@ -12,8 +12,6 @@ set(USED_LIBS ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_REGEX_LIBR
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 
-add_executable(server chat_server.cpp)
-target_link_libraries(server ${USED_LIBS})
-
-add_executable(client chat_client.cpp)
-target_link_libraries(client ${USED_LIBS})
+add_subdirectory(Common)
+add_subdirectory(Client)
+add_subdirectory(Server)
