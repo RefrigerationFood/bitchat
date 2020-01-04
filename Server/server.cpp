@@ -26,13 +26,6 @@
 
 using boost::asio::ip::tcp;
 
-namespace {
-boost::asio::mutable_buffers_1 toBuffer(message_t& message)
-{
-    return boost::asio::buffer(toCharPtr(message), c_message_size);
-}
-} // namespace
-
 //----------------------------------------------------------------------
 
 typedef std::deque<message_t> chat_message_queue;

@@ -1,13 +1,3 @@
-//
-// message.hpp
-// ~~~~~~~~~~~~~~~~
-//
-// Copyright (c) 2003-2008 Christopher M. Kohlhoff (chris at kohlhoff dot com)
-//
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-//
-
 #pragma once
 
 #include <cstdio>
@@ -33,12 +23,6 @@ struct message_t
 
     bool isValid() { return (header.validation_code == c_valid_code); }
 };
-namespace {
-char* toCharPtr(message_t& message)
-{
-    return reinterpret_cast<char*>(&message);
-}
-} // namespace
 
 constexpr size_t c_header_size{sizeof(header_t)};
 constexpr size_t c_message_size{sizeof(message_t)};
