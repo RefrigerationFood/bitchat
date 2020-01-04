@@ -20,6 +20,7 @@
 #include <boost/asio.hpp>
 #include <mutex>
 
+#include <ClientProxy/ClientProxyFactory.hpp>
 #include <Common/message.hpp>
 
 using boost::asio::ip::tcp;
@@ -42,6 +43,7 @@ class chat_participant
 public:
   virtual ~chat_participant() {}
   virtual void deliver(const message_t& msg) = 0;
+  virtual int getId() = 0;
 };
 
 typedef boost::shared_ptr<chat_participant> chat_participant_ptr;
@@ -65,13 +67,14 @@ public:
 
   void deliver(const message_t& msg)
   {
-    std::cout << "Message delivered: " << msg.body << std::endl;
     recent_msgs_.push_back(msg);
     while (recent_msgs_.size() > max_recent_msgs)
       recent_msgs_.pop_front();
 
-    std::for_each(participants_.begin(), participants_.end(),
-        boost::bind(&chat_participant::deliver, _1, boost::ref(msg)));
+    for (auto& participant : participants_)
+    {
+        participant->deliver(msg);
+    }
   }
 
 private:
@@ -87,73 +90,30 @@ class chat_session
     public boost::enable_shared_from_this<chat_session>
 {
 public:
-  chat_session(boost::asio::io_service& io_service, chat_room& room)
-    : socket_(io_service),
-      room_(room)
+  chat_session(const Server::ClientProxy::ClientProxyPtr& proxy_ptr, chat_room& room, int id)
+    : m_client_proxy(proxy_ptr)
+    , id_(id)
   {
   }
 
-  tcp::socket& socket()
+  virtual int getId() final
   {
-    return socket_;
-  }
-
-  void start()
-  {
-    room_.join(shared_from_this());
-    boost::asio::async_read(socket_,
-        boost::asio::buffer(toCharPtr(read_msg_), c_message_size),
-        boost::bind(
-          &chat_session::handle_read, shared_from_this(),
-          boost::asio::placeholders::error));
+      return id_;
   }
 
   void deliver(const message_t& msg)
   {
       std::lock_guard<std::mutex> lock(mutex);
-      write_msgs_.push_back(msg);
-      while (!write_msgs_.empty())
-      {
-          std::cout << "Sent message: " << write_msgs_.front().body << std::endl;
-          socket_.write_some(toBuffer(write_msgs_.front()));
 
-          write_msgs_.pop_front(); // TODO: use atomic, and synchronize message sending
-      }
-  }
-
-  void handle_read(const boost::system::error_code& error)
-  {
-    if (!error && read_msg_.isValid())
-    {
-        room_.deliver(read_msg_);
-        boost::asio::async_read(socket_,
-                              toBuffer(read_msg_),
-                              boost::bind(&chat_session::handle_read, shared_from_this(), boost::asio::placeholders::error));
-    }
-    else
-    {
-      room_.leave(shared_from_this());
-    }
-  }
-
-  void handle_write(const boost::system::error_code& error)
-  {
-    if (!error)
-    {
-
-    }
-    else
-    {
-      room_.leave(shared_from_this());
-    }
+      m_client_proxy->sendMessage(msg);
   }
 
 private:
-  tcp::socket socket_;
-  chat_room& room_;
+  Server::ClientProxy::ClientProxyPtr m_client_proxy;
   message_t read_msg_;
   std::mutex mutex;
   chat_message_queue write_msgs_;
+  int id_;
 };
 
 typedef boost::shared_ptr<chat_session> chat_session_ptr;
@@ -165,33 +125,46 @@ class chat_server
 public:
   chat_server(boost::asio::io_service& io_service,
       const tcp::endpoint& endpoint)
-    : io_service_(io_service),
-      acceptor_(io_service, endpoint)
+    : io_service_(io_service)
+    , acceptor_(io_service, endpoint)
+    , pending_socket(io_service_)
   {
-    chat_session_ptr new_session(new chat_session(io_service_, room_));
-    acceptor_.async_accept(new_session->socket(),
-        boost::bind(&chat_server::handle_accept, this, new_session,
-          boost::asio::placeholders::error));
+    acceptor_.async_accept(pending_socket,
+        boost::bind(&chat_server::handle_accept, this, boost::asio::placeholders::error));
   }
 
-  void handle_accept(chat_session_ptr session,
-      const boost::system::error_code& error)
+  void handle_accept(const boost::system::error_code& error)
   {
     if (!error)
     {
       std::cout << "New connection" << std::endl;
-      session->start();
-      chat_session_ptr new_session(new chat_session(io_service_, room_));
-      acceptor_.async_accept(new_session->socket(),
-          boost::bind(&chat_server::handle_accept, this, new_session,
-            boost::asio::placeholders::error));
+      Server::ClientProxy::ClientProxyPtr client_proxy_ptr
+        = Server::ClientProxy::ClientProxyFactory::createInstance(std::move(pending_socket));
+
+      chat_session_ptr new_session(new chat_session(client_proxy_ptr, room_, id++));
+
+      pending_socket = tcp::socket(io_service_);
+
+      room_.join(new_session);
+
+        auto on_action_callback = [this](EAction action, const message_t& msg)
+        {
+            room_.deliver(msg);
+        };
+
+      client_proxy_ptr->setOnActionCallback(on_action_callback);
+
+      acceptor_.async_accept(pending_socket,
+          boost::bind(&chat_server::handle_accept, this, boost::asio::placeholders::error));
     }
   }
 
 private:
   boost::asio::io_service& io_service_;
+  tcp::socket pending_socket;
   tcp::acceptor acceptor_;
   chat_room room_;
+  int id = 0;
 };
 
 typedef boost::shared_ptr<chat_server> chat_server_ptr;
