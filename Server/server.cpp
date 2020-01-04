@@ -21,6 +21,7 @@
 #include <mutex>
 
 #include <ClientProxy/ClientProxyFactory.hpp>
+#include <ClientsAcceptor/ClientsAcceptorFactory.hpp>
 #include <Common/message.hpp>
 
 using boost::asio::ip::tcp;
@@ -96,12 +97,12 @@ public:
   {
   }
 
-  virtual int getId() final
+  int getId() final
   {
       return id_;
   }
 
-  void deliver(const message_t& msg)
+  void deliver(const message_t& msg) final
   {
       std::lock_guard<std::mutex> lock(mutex);
 
@@ -126,43 +127,30 @@ public:
   chat_server(boost::asio::io_service& io_service,
       const tcp::endpoint& endpoint)
     : io_service_(io_service)
-    , acceptor_(io_service, endpoint)
-    , pending_socket(io_service_)
+    , clients_acceptor(Server::ClientsAcceptor::ClientsAcceptorFactory::createInstance(io_service, endpoint))
   {
-    acceptor_.async_accept(pending_socket,
-        boost::bind(&chat_server::handle_accept, this, boost::asio::placeholders::error));
-  }
+      auto on_action_callback = [this](EAction action, const message_t& msg)
+      {
+          room_.deliver(msg);
+      };
 
-  void handle_accept(const boost::system::error_code& error)
-  {
-    if (!error)
-    {
-      std::cout << "New connection" << std::endl;
-      Server::ClientProxy::ClientProxyPtr client_proxy_ptr
-        = Server::ClientProxy::ClientProxyFactory::createInstance(std::move(pending_socket));
+      auto on_client_connected_callback = [this, on_action_callback](boost::asio::ip::tcp::socket m_socket)
+      {
+          std::cout << "New connection" << std::endl;
+          Server::ClientProxy::ClientProxyPtr client_proxy_ptr
+              = Server::ClientProxy::ClientProxyFactory::createInstance(std::move(m_socket));
+          client_proxy_ptr->setOnActionCallback(on_action_callback);
 
-      chat_session_ptr new_session(new chat_session(client_proxy_ptr, room_, id++));
+          chat_session_ptr new_session(new chat_session(client_proxy_ptr, room_, id++));
 
-      pending_socket = tcp::socket(io_service_);
-
-      room_.join(new_session);
-
-        auto on_action_callback = [this](EAction action, const message_t& msg)
-        {
-            room_.deliver(msg);
-        };
-
-      client_proxy_ptr->setOnActionCallback(on_action_callback);
-
-      acceptor_.async_accept(pending_socket,
-          boost::bind(&chat_server::handle_accept, this, boost::asio::placeholders::error));
-    }
+          room_.join(new_session);
+      };
+      clients_acceptor->setOnClientConnected(on_client_connected_callback);
   }
 
 private:
   boost::asio::io_service& io_service_;
-  tcp::socket pending_socket;
-  tcp::acceptor acceptor_;
+  Server::ClientsAcceptor::ClientsAcceptorPtr clients_acceptor;
   chat_room room_;
   int id = 0;
 };

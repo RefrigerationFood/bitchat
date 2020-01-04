@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ClientProxy/IClientProxy.hpp>
+#include "IClientProxy.hpp"
 #include <boost/asio.hpp>
 
 namespace Server {
