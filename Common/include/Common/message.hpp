@@ -31,17 +31,14 @@ struct message_t
     header_t header;
     char body[c_max_body_size];
 
-    bool isValid()
-    {
-        return (header.validation_code == c_valid_code);
-    }
+    bool isValid() { return (header.validation_code == c_valid_code); }
 };
 namespace {
-    char *toCharPtr(message_t &message)
-    {
-        return reinterpret_cast<char *>(&message);
-    }
+char* toCharPtr(message_t& message)
+{
+    return reinterpret_cast<char*>(&message);
 }
+} // namespace
 
 constexpr size_t c_header_size{sizeof(header_t)};
 constexpr size_t c_message_size{sizeof(message_t)};

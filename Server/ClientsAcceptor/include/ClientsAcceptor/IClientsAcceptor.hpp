@@ -5,17 +5,17 @@
 #include <memory>
 
 namespace Server {
-    namespace ClientsAcceptor {
-        using ClientConnectedCallback = std::function<void(boost::asio::ip::tcp::socket m_socket)>;
+namespace ClientsAcceptor {
+using ClientConnectedCallback = std::function<void(boost::asio::ip::tcp::socket m_socket)>;
 
-        class IClientsAcceptor
-        {
-        public:
-            virtual ~IClientsAcceptor() = default;
+class IClientsAcceptor
+{
+public:
+    virtual ~IClientsAcceptor() = default;
 
-            virtual void setOnClientConnected(ClientConnectedCallback callback) = 0;
-        };
+    virtual void setOnClientConnected(ClientConnectedCallback callback) = 0;
+};
 
-        using ClientsAcceptorPtr = std::shared_ptr<IClientsAcceptor>;
-    }
-}
+using ClientsAcceptorPtr = std::shared_ptr<IClientsAcceptor>;
+} // namespace ClientsAcceptor
+} // namespace Server

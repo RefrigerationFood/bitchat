@@ -8,12 +8,12 @@
 using namespace Server::ClientProxy;
 
 CClientProxy::CClientProxy(boost::asio::ip::tcp::socket socket)
-: m_socket(std::move(socket))
+    : m_socket(std::move(socket))
 {
-    boost::asio::async_read(m_socket,
-                            toBuffer(m_tmp_message),
-                            boost::bind(&CClientProxy::handleRead, this,
-                                boost::asio::placeholders::error));
+    boost::asio::async_read(
+        m_socket,
+        toBuffer(m_tmp_message),
+        boost::bind(&CClientProxy::handleRead, this, boost::asio::placeholders::error));
 }
 
 void CClientProxy::sendMessage(const message_t& msg)
@@ -21,8 +21,9 @@ void CClientProxy::sendMessage(const message_t& msg)
     std::lock_guard<std::mutex> lock(m_mutex);
 
     m_tmp_message = msg;
-    m_socket.async_write_some(toBuffer(m_tmp_message),
-        boost::bind(&CClientProxy::handleWrite, this,boost::asio::placeholders::error));
+    m_socket.async_write_some(
+        toBuffer(m_tmp_message),
+        boost::bind(&CClientProxy::handleWrite, this, boost::asio::placeholders::error));
 }
 
 void CClientProxy::setOnActionCallback(ActionCallback callback)
@@ -30,15 +31,15 @@ void CClientProxy::setOnActionCallback(ActionCallback callback)
     m_action_callback = callback;
 }
 
-void CClientProxy::handleRead(const boost::system::error_code &error)
+void CClientProxy::handleRead(const boost::system::error_code& error)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     if (!error && m_tmp_message.isValid())
     {
-        boost::asio::async_read(m_socket,
-                                toBuffer(m_tmp_message),
-                                boost::bind(&CClientProxy::handleRead, this,
-                                            boost::asio::placeholders::error));
+        boost::asio::async_read(
+            m_socket,
+            toBuffer(m_tmp_message),
+            boost::bind(&CClientProxy::handleRead, this, boost::asio::placeholders::error));
 
         if (m_action_callback)
         {
@@ -56,7 +57,7 @@ void CClientProxy::handleRead(const boost::system::error_code &error)
     }
 }
 
-void CClientProxy::handleWrite(const boost::system::error_code &error)
+void CClientProxy::handleWrite(const boost::system::error_code& error)
 {
     if (error)
     {

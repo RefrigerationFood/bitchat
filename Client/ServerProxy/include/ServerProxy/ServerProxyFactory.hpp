@@ -3,9 +3,9 @@
 #include <ServerProxy/IServerProxy.hpp>
 
 namespace Client {
-    namespace ServerProxy {
-        namespace ServerProxyFactory {
-            ServerProxyPtr createInstance(const std::string& host, const std::string& port);
-        }
-    }
+namespace ServerProxy {
+namespace ServerProxyFactory {
+ServerProxyPtr createInstance(const std::string& host, const std::string& port);
 }
+} // namespace ServerProxy
+} // namespace Client
