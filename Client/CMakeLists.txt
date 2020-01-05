@@ -2,6 +2,9 @@ set(CLIENT_TARGET client)
 
 add_subdirectory(ServerProxy)
 add_subdirectory(KeyCatchingRoutine)
+add_subdirectory(Controller)
+add_subdirectory(Interface)
+add_subdirectory(Common)
 
 add_executable(${CLIENT_TARGET} client.cpp)
 target_link_libraries(
