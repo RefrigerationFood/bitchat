@@ -11,7 +11,7 @@ class IInterface
 {
 public:
     virtual void setDraft(const std::string& text) = 0;
-    virtual void setMessages(const std::vector<std::string>& text) = 0;
+    virtual void setMessages(const std::vector<Client::Common::Types::ChatMessage>& text) = 0;
 };
 
 using InterfacePtr = std::shared_ptr<IInterface>;

@@ -10,6 +10,8 @@ add_executable(${CLIENT_TARGET} client.cpp)
 target_link_libraries(
     ${CLIENT_TARGET}
     PUBLIC server_proxy_src
+    PUBLIC controller_src
+    PUBLIC interface_src
     PUBLIC key_catching_routine_src
     PRIVATE ${USED_LIBS}
     PRIVATE common)

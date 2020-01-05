@@ -11,4 +11,3 @@ target_link_libraries(
         PUBLIC client_common_interface
         PUBLIC interface_interface
         PUBLIC common)
-

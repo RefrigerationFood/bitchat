@@ -7,13 +7,6 @@ using namespace Client::KeyCatchingRoutine;
 CKeyCatchingRoutine::CKeyCatchingRoutine()
     : m_run(false)
 {
-    initscr();
-    cbreak();
-    noecho();
-    curs_set(0);
-    nodelay(stdscr, TRUE);
-
-    scrollok(stdscr, TRUE);
 }
 
 void CKeyCatchingRoutine::start()

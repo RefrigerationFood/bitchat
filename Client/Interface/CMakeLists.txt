@@ -6,4 +6,4 @@ target_link_libraries(
         ${INTERFACE_INTERFACE_TARGET}
         INTERFACE client_common_interface)
 
-#add_subdirectory(src)
+add_subdirectory(src)
