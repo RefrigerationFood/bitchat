@@ -1,18 +1,9 @@
-//
-// chat_client.cpp
-// ~~~~~~~~~~~~~~~
-//
-// Copyright (c) 2003-2008 Christopher M. Kohlhoff (chris at kohlhoff dot com)
-//
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-//
-
 #include <iostream>
 #include <mutex>
 
 #include <Common/message.hpp>
 #include <ServerProxy/ServerProxyFactory.hpp>
+#include <KeyCatchingRoutine/KeyCatchingRoutineFactory.hpp>
 
 int main(int argc, char* argv[])
 {
@@ -31,22 +22,19 @@ int main(int argc, char* argv[])
             std::cout.write(msg.body, msg.header.size);
             std::cout << "\n";
         };
+        auto on_key_pressed_callback = [](char c) {
+        };
 
-        Client::ServerProxy::ServerProxyPtr server_proxy =
+        auto server_proxy =
             Client::ServerProxy::ServerProxyFactory::createInstance(argv[1], argv[2]);
 
         server_proxy->setOnActionCallback(on_action_callback);
 
-        char line[c_max_body_size + 1];
-        while (std::cin.getline(line, c_max_body_size + 1))
-        {
-            using namespace std; // For strlen and memcpy.
-            message_t msg;
-            msg.header.size = strlen(line);
-            msg.header.action = EAction::Message;
-            memcpy(msg.body, line, msg.header.size);
-            server_proxy->sendMessage(msg);
-        }
+        auto key_catching_routine =
+            Client::KeyCatchingRoutine::KeyCatchingRoutineFactory::createInstance();
+
+        key_catching_routine->setOnKeyPressedCallback(on_key_pressed_callback);
+        key_catching_routine->start();
     }
     catch (std::exception& e)
     {
