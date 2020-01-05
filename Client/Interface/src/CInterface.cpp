@@ -28,13 +28,24 @@ void CInterface::setDraft(const std::string& text)
     render();
 }
 
-void CInterface::setMessages(const std::vector<Client::Common::Types::ChatMessage>& text) {}
+void CInterface::setMessages(const std::vector<Client::Common::Types::ChatMessage>& messages)
+{
+    m_messages = messages;
+
+    render();
+}
 
 void CInterface::render()
 {
     clear();
     refresh();
 
-    mvprintw(m_length - 2, 0, "%s", std::string(m_width, '-').c_str());
+    int i = 0;
+    for (auto& message : m_messages)
+    {
+        mvprintw(i, 0, "%s | %s", message.author.c_str(), message.text.c_str());
+        ++i;
+    }
     mvprintw(m_length - 1, 0, "> %s", m_draft.c_str());
+    mvprintw(m_length - 2, 0, "%s", std::string(m_width, '-').c_str());
 }

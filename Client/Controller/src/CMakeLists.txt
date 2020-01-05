@@ -10,4 +10,5 @@ target_link_libraries(
         PUBLIC server_proxy_interface
         PUBLIC client_common_interface
         PUBLIC interface_interface
+        PUBLIC key_catching_routine_interface
         PUBLIC common)
