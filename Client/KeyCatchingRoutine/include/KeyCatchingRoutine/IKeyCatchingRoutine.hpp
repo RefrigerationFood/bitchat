@@ -1,7 +1,7 @@
 #pragma once
 
-#include <memory>
 #include <functional>
+#include <memory>
 
 namespace Client {
 namespace KeyCatchingRoutine {
@@ -18,5 +18,5 @@ public:
 
 using KeyCatchingRoutinePtr = std::shared_ptr<IKeyCatchingRoutine>;
 
-}
-}
+} // namespace KeyCatchingRoutine
+} // namespace Client

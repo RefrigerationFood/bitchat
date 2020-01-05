@@ -5,7 +5,7 @@
 using namespace Client::KeyCatchingRoutine;
 
 CKeyCatchingRoutine::CKeyCatchingRoutine()
-: m_run(false)
+    : m_run(false)
 {
     initscr();
     cbreak();

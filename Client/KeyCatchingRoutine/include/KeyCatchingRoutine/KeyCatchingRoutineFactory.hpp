@@ -7,5 +7,5 @@ namespace KeyCatchingRoutine {
 namespace KeyCatchingRoutineFactory {
 KeyCatchingRoutinePtr createInstance();
 }
-}
-}
+} // namespace KeyCatchingRoutine
+} // namespace Client

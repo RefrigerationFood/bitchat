@@ -1,25 +1,27 @@
 #pragma once
 
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
-#include <unistd.h>
-#include <termios.h>
-#include <sys/select.h>
+#include <ctime>
 #include <iostream>
-#include <vector>
-#include <ctime>
-#include <cmath>
-#include <ctime>
 #include <ncurses.h>
+#include <sys/select.h>
+#include <termios.h>
+#include <unistd.h>
+#include <vector>
 
 int kbhit(void)
 {
     int ch = getch();
 
-    if (ch != ERR) {
+    if (ch != ERR)
+    {
         ungetch(ch);
         return 1;
-    } else {
+    }
+    else
+    {
         return 0;
     }
 }
@@ -32,7 +34,7 @@ int kbhit(void)
    else newt.c_lflag |= ICANON;
    tcsetattr(0, TCSANOW, &newt);
 }
- 
+
 void terminal_echo(int yn) {
    struct termios oldt, newt;
    tcgetattr(0, &oldt);
@@ -41,10 +43,10 @@ void terminal_echo(int yn) {
    else newt.c_lflag |= ECHO;
    tcsetattr(0, TCSANOW, &newt);
 }
- 
-void SetChar(int x, int y , char sym ) { 
-	printf("\x1B[%d;%df", y, x); 
-	printf("%c", sym ); 
+
+void SetChar(int x, int y , char sym ) {
+        printf("\x1B[%d;%df", y, x);
+        printf("%c", sym );
 }
 
 void gotoxy(int x,int y)
@@ -53,9 +55,9 @@ void gotoxy(int x,int y)
  }
 
 void clrscr() { printf("\x1B[2J\x1B[0;0f"); }
- 
+
 int getch() {
-   		 int ch;
+                 int ch;
    terminal_lnbuf(0);
    terminal_echo(0);
    ch = getchar();
@@ -63,7 +65,7 @@ int getch() {
    terminal_echo(1);
    return ch;
 }
- 
+
 int getche() {
    register int ch;
    terminal_lnbuf(0);
@@ -71,7 +73,7 @@ int getche() {
    terminal_lnbuf(1);
    return ch;
 }
- 
+
 int kbhit() {
    register int ret;
    fd_set fds;

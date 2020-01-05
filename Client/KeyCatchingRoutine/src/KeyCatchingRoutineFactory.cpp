@@ -8,6 +8,6 @@ KeyCatchingRoutinePtr createInstance()
 {
     return KeyCatchingRoutinePtr(new CKeyCatchingRoutine());
 }
-}
-}
-}
+} // namespace KeyCatchingRoutineFactory
+} // namespace KeyCatchingRoutine
+} // namespace Client

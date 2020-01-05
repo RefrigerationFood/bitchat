@@ -2,8 +2,8 @@
 #include <mutex>
 
 #include <Common/message.hpp>
-#include <ServerProxy/ServerProxyFactory.hpp>
 #include <KeyCatchingRoutine/KeyCatchingRoutineFactory.hpp>
+#include <ServerProxy/ServerProxyFactory.hpp>
 
 int main(int argc, char* argv[])
 {
@@ -22,8 +22,7 @@ int main(int argc, char* argv[])
             std::cout.write(msg.body, msg.header.size);
             std::cout << "\n";
         };
-        auto on_key_pressed_callback = [](char c) {
-        };
+        auto on_key_pressed_callback = [](char c) {};
 
         auto server_proxy =
             Client::ServerProxy::ServerProxyFactory::createInstance(argv[1], argv[2]);
