@@ -18,12 +18,17 @@ public:
     void processInputAction(EAction action, const message_t& message) final;
 
 private:
+    uint64_t generateUUID();
+    message_t generateMessage(const std::string& text);
+
+private:
     ServerProxy::ServerProxyPtr m_server_proxy;
     Interface::InterfacePtr m_interface;
     KeyCatchingRoutine::KeyCatchingRoutinePtr m_key_catching_routine;
     std::vector<Client::Common::Types::ChatMessage> m_messages;
     message_t m_message;
     std::string m_draft;
+    uint64_t m_uuid;
 };
 
 } // namespace Controller

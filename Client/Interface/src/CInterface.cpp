@@ -1,5 +1,6 @@
 #include "CInterface.hpp"
 
+#include <cstring>
 #include <ncurses.h>
 
 using namespace Client::Interface;
@@ -12,6 +13,7 @@ CInterface::CInterface()
     curs_set(0);
     nodelay(stdscr, TRUE);
     scrollok(stdscr, TRUE);
+    keypad(stdscr, TRUE);
 
     getmaxyx(stdscr, m_length, m_width);
 }
@@ -37,13 +39,16 @@ void CInterface::setMessages(const std::vector<Client::Common::Types::ChatMessag
 
 void CInterface::render()
 {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     clear();
     refresh();
 
     int i = 0;
     for (auto& message : m_messages)
     {
-        mvprintw(i, 0, "%s | %s", message.author.c_str(), message.text.c_str());
+        std::string author = message.from_current_user ? "me" : message.author;
+        mvprintw(i, 0, "%-20s | %s", author.c_str(), message.text.c_str());
         ++i;
     }
     mvprintw(m_length - 1, 0, "> %s", m_draft.c_str());

@@ -10,6 +10,7 @@ struct ChatMessage
 {
     std::string author;
     std::string text;
+    bool from_current_user;
 };
 
 } // namespace Types
