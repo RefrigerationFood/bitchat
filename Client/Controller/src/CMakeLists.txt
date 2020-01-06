@@ -11,4 +11,5 @@ target_link_libraries(
         PUBLIC client_common_interface
         PUBLIC interface_interface
         PUBLIC key_catching_routine_interface
+        PUBLIC settings_manager_interface
         PUBLIC common)

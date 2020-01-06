@@ -8,4 +8,5 @@ target_link_libraries(
         ${INTERFACE_SRC_TARGET}
         PUBLIC ${CURSES_LIBRARIES}
         PUBLIC interface_interface
+        PUBLIC settings_manager_interface
         PUBLIC common)

@@ -5,9 +5,9 @@
 namespace Client {
 namespace Interface {
 namespace InterfaceFactory {
-InterfacePtr createInstance()
+InterfacePtr createInstance(SettingsManager::SettingsManagerPtr settings_manager)
 {
-    return InterfacePtr(new CInterface());
+    return InterfacePtr(new CInterface(std::move(settings_manager)));
 }
 } // namespace InterfaceFactory
 } // namespace Interface

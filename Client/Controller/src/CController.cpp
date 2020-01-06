@@ -8,11 +8,14 @@ using namespace Client::Controller;
 CController::CController(
     ServerProxy::ServerProxyPtr server_proxy,
     Interface::InterfacePtr interface,
-    KeyCatchingRoutine::KeyCatchingRoutinePtr key_catching_routine)
+    KeyCatchingRoutine::KeyCatchingRoutinePtr key_catching_routine,
+    SettingsManager::SettingsManagerPtr settings_manager)
     : m_server_proxy(std::move(server_proxy))
     , m_interface(std::move(interface))
     , m_key_catching_routine(std::move(key_catching_routine))
+    , m_settings_manager(std::move(settings_manager))
     , m_uuid(generateUUID())
+    , m_name_subscription(m_settings_manager->getClientNameAttribute(), m_name, m_mutex)
 {
     m_interface->setDraft(m_draft);
 
@@ -81,7 +84,10 @@ message_t CController::generateMessage(const std::string& text)
     message_t msg;
     chat_message_t chat_message;
 
-    strcpy(chat_message.author, "unknown");
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        strcpy(chat_message.author, m_name.c_str());
+    }
     strcpy(chat_message.text, text.c_str());
     chat_message.author_size = strlen(chat_message.author);
     chat_message.text_size = strlen(chat_message.text);

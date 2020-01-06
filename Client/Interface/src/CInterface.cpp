@@ -1,21 +1,20 @@
 #include "CInterface.hpp"
 
-#include <cstring>
 #include <ncurses.h>
 
 using namespace Client::Interface;
 
-CInterface::CInterface()
+CInterface::CInterface(SettingsManager::SettingsManagerPtr settings_manager)
+    : m_settings_manager(std::move(settings_manager))
+    , m_length_subscription(m_settings_manager->getTerminalLengthAttribute(), m_length, m_mutex)
+    , m_width_subscription(m_settings_manager->getTerminalWidthAttribute(), m_width, m_mutex)
 {
-    initscr();
     cbreak();
     noecho();
     curs_set(0);
     nodelay(stdscr, TRUE);
     scrollok(stdscr, TRUE);
     keypad(stdscr, TRUE);
-
-    getmaxyx(stdscr, m_length, m_width);
 }
 
 CInterface::~CInterface()
@@ -51,6 +50,7 @@ void CInterface::render()
         mvprintw(i, 0, "%-20s | %s", author.c_str(), message.text.c_str());
         ++i;
     }
+    auto lenghth = m_length;
     mvprintw(m_length - 1, 0, "> %s", m_draft.c_str());
     mvprintw(m_length - 2, 0, "%s", std::string(m_width, '-').c_str());
 }
