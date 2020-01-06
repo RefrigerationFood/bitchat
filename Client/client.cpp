@@ -1,52 +1,37 @@
-//
-// chat_client.cpp
-// ~~~~~~~~~~~~~~~
-//
-// Copyright (c) 2003-2008 Christopher M. Kohlhoff (chris at kohlhoff dot com)
-//
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-//
-
 #include <iostream>
 #include <mutex>
 
-#include <Common/message.hpp>
+#include <Controller/ControllerFactory.hpp>
+#include <Interface/InterfaceFactory.hpp>
+#include <KeyCatchingRoutine/KeyCatchingRoutineFactory.hpp>
 #include <ServerProxy/ServerProxyFactory.hpp>
+#include <SettingsManager/SettingsManagerFactory.hpp>
+#include <ncurses.h>
 
 int main(int argc, char* argv[])
 {
     try
     {
-        if (argc != 3)
+        if (argc != 4)
         {
-            std::cerr << "Usage: chat_client <host> <port>\n";
+            std::cerr << "Usage: chat_client <host> <port> <name>\n";
             return 1;
         }
 
-        std::mutex mutex;
-        auto on_action_callback = [&mutex](EAction action, const message_t& msg) {
-            std::lock_guard<std::mutex> lock(mutex);
+        initscr();
 
-            std::cout.write(msg.body, msg.header.size);
-            std::cout << "\n";
-        };
+        auto settings_manager = Client::SettingsManager::SettingsManagerFactory::createInstance();
+        settings_manager->getClientNameAttribute().setValue(argv[3]);
 
-        Client::ServerProxy::ServerProxyPtr server_proxy =
+        auto server_proxy =
             Client::ServerProxy::ServerProxyFactory::createInstance(argv[1], argv[2]);
+        auto key_catching_routine =
+            Client::KeyCatchingRoutine::KeyCatchingRoutineFactory::createInstance();
+        auto interface = Client::Interface::InterfaceFactory::createInstance(settings_manager);
+        auto controller = Client::Controller::ControllerFactory::createInstance(
+            server_proxy, interface, key_catching_routine, settings_manager);
 
-        server_proxy->setOnActionCallback(on_action_callback);
-
-        char line[c_max_body_size + 1];
-        while (std::cin.getline(line, c_max_body_size + 1))
-        {
-            using namespace std; // For strlen and memcpy.
-            message_t msg;
-            msg.header.size = strlen(line);
-            msg.header.action = EAction::Message;
-            memcpy(msg.body, line, msg.header.size);
-            server_proxy->sendMessage(msg);
-        }
+        key_catching_routine->start();
     }
     catch (std::exception& e)
     {

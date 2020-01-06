@@ -61,6 +61,10 @@ void CServerProxy::handleConnect(const boost::system::error_code& error)
             endpoint,
             boost::bind(&CServerProxy::handleConnect, this, boost::asio::placeholders::error));
     }
+    else
+    {
+        std::cerr << "*** ERROR WHILE CONNECTING TO THE SERVER ***" << std::endl;
+    }
 }
 
 void CServerProxy::handleRead(const boost::system::error_code& error)

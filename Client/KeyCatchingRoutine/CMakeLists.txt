@@ -1,0 +1,6 @@
+set(KEY_CATCHING_ROUTINE_INTERFACE_TARGET key_catching_routine_interface)
+
+add_library(${KEY_CATCHING_ROUTINE_INTERFACE_TARGET} INTERFACE)
+target_include_directories(${KEY_CATCHING_ROUTINE_INTERFACE_TARGET} INTERFACE include/)
+
+add_subdirectory(src)

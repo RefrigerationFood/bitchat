@@ -100,9 +100,7 @@ public:
 
 private:
     Server::ClientProxy::ClientProxyPtr m_client_proxy;
-    message_t read_msg_;
     std::mutex mutex;
-    chat_message_queue write_msgs_;
     int id_;
 };
 
